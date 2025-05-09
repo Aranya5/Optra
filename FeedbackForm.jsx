@@ -1,35 +1,44 @@
-// 📁 src/components/FeedbackForm.jsx
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
+import { submitFeedback } from '../services/feedbackService';
 
-const FeedbackForm = () => {
-  const [text, setText] = useState('');
-  const [sentiment, setSentiment] = useState(null);
+function FeedbackForm({ token }) {
+  const [content, setContent] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5001/api/sentiment', { text });
-      setSentiment(res.data.sentiment);
+      await submitFeedback(token, content);
+      setContent('');
+      setError('');
+      alert('Feedback submitted successfully');
     } catch (err) {
-      console.error(err);
+      setError('Failed to submit feedback');
     }
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Submit Feedback</h2>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-4">Submit Feedback</h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit}>
-        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} cols={60} /><br /><br />
-        <button type="submit">Analyze Sentiment</button>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          rows="5"
+          placeholder="Enter your feedback"
+          required
+        />
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition mt-4"
+        >
+          Submit
+        </button>
       </form>
-      {sentiment && (
-        <div style={{ marginTop: '1rem' }}>
-          <strong>Sentiment:</strong> {sentiment}
-        </div>
-      )}
     </div>
   );
-};
+}
 
 export default FeedbackForm;
