@@ -1,54 +1,47 @@
-// src/components/Navbar.jsx
-import React from 'react';
-import { AppBar, Toolbar, Button, Typography, Box } from '@mui/material';
-import { useNavigate, Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
-const Navbar = () => {
-  const navigate = useNavigate();
-  const role = localStorage.getItem('role');
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-    window.location.reload(); // Ensures role is cleared
-  };
-
-  // Hide navbar on login page or if role is undefined
-  if (!role) return null;
+function Navbar() {
+  const { user, logout } = useContext(AuthContext);
 
   return (
-    <AppBar position="sticky" sx={{ backgroundColor: '#333' }}>
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="h6" component={Link} to={`/${role}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
-          OPTRA Dashboard
-        </Typography>
-
-        <Box>
-          <Button color="inherit" component={Link} to={`/${role}/tasks`} sx={{ textTransform: 'none' }}>
-            Tasks
-          </Button>
-          <Button color="inherit" component={Link} to={`/${role}/feedback`} sx={{ textTransform: 'none' }}>
-            Feedback
-          </Button>
-          <Button color="inherit" component={Link} to={`/${role}/reports`} sx={{ textTransform: 'none' }}>
-            Reports
-          </Button>
-          <Button
-            onClick={handleLogout}
-            sx={{
-              ml: 2,
-              backgroundColor: '#ff4d4f',
-              color: 'white',
-              textTransform: 'none',
-              '&:hover': { backgroundColor: '#e60000' }
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
-      </Toolbar>
-    </AppBar>
+    <nav className="bg-blue-600 p-4 text-white">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/" className="text-xl font-bold">OPTRA</Link>
+        <div className="space-x-4">
+          {user ? (
+            <>
+              <Link to={`/${user.role}/dashboard`} className="hover:underline">Dashboard</Link>
+              {user.role === 'employee' && (
+                <>
+                  <Link to="/employee/feedback" className="hover:underline">Feedback</Link>
+                  <Link to="/employee/whistleblower" className="hover:underline">Report</Link>
+                </>
+              )}
+              {user.role === 'manager' && (
+                <Link to="/manager/feedback" className="hover:underline">Feedback</Link>
+              )}
+              {user.role === 'hr' && (
+                <Link to="/hr/feedback" className="hover:underline">Feedback</Link>
+              )}
+              {user.role === 'admin' && (
+                <Link to="/admin/reports" className="hover:underline">Reports</Link>
+              )}
+              <button
+                onClick={logout}
+                className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 transition"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="hover:underline">Login</Link>
+          )}
+        </div>
+      </div>
+    </nav>
   );
-};
+}
 
 export default Navbar;
