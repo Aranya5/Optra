@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../infra/frontend.Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/app
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://backend:5000
+      - NODE_ENV=development
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../infra/backend.Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/optra
+      - JWT_SECRET=your_jwt_secret_key_123456
+      - SENTIMENT_ANALYSIS_SERVICE=http://sentiment_analysis_service:8000/analyze
+    depends_on:
+      - mongo
+      - sentiment_analysis_service
+    volumes:
+      - ../backend:/app
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  sentiment_analysis_service:
+    build:
+      context: ../ai_services/sentiment_analysis_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../ai_services/sentiment_analysis_service:/app
+
+volumes:
+  mongo_data:
